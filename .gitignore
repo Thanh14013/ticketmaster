@@ -1,0 +1,272 @@
+# ================================================================
+#  TICKETMASTER – .gitignore
+#  Áp dụng cho toàn bộ monorepo (parent + tất cả modules)
+# ================================================================
+
+
+# ----------------------------------------------------------------
+#  SECRETS & ENVIRONMENT  ← QUAN TRỌNG NHẤT
+#  Tuyệt đối không commit các file chứa credentials
+# ----------------------------------------------------------------
+.env
+.env.local
+.env.production
+.env.staging
+*.secret
+*-secret.yml
+*-secret.yaml
+*-secret.properties
+secrets/
+
+
+# ----------------------------------------------------------------
+#  MAVEN
+# ----------------------------------------------------------------
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# Maven wrapper (nên commit để CI không cần cài Maven)
+# .mvn/wrapper/maven-wrapper.properties  ← bỏ comment nếu muốn ignore
+
+# Maven local repo cache (không commit, quá nặng)
+.m2/
+
+# Maven release plugin
+release.properties
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+pom.xml.tag
+pom.xml.bak
+
+
+# ----------------------------------------------------------------
+#  JAVA COMPILED
+# ----------------------------------------------------------------
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+*.zip
+*.tar.gz
+*.rar
+hs_err_pid*
+replay_pid*
+
+
+# ----------------------------------------------------------------
+#  SPRING BOOT
+# ----------------------------------------------------------------
+# Application logs
+logs/
+*.log
+*.log.*
+spring.log
+
+# Spring Boot devtools restart file
+.spring-boot-devtools.properties
+
+# Spring Boot jar launcher
+*.lck
+
+
+# ----------------------------------------------------------------
+#  DOCKER
+# ----------------------------------------------------------------
+# Không ignore Dockerfile và docker-compose.yml (cần commit)
+# Nhưng ignore các file runtime docker tạo ra
+.docker/
+docker-compose.override.yml   # Mỗi dev có override riêng → không commit
+
+
+# ----------------------------------------------------------------
+#  IDE – IntelliJ IDEA
+# ----------------------------------------------------------------
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+.idea_modules/
+
+# IntelliJ IDEA workspace (chứa local paths, không share được)
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/usage.statistics.xml
+.idea/dictionaries/
+.idea/shelf/
+.idea/aws.xml
+.idea/discord.xml
+
+# IntelliJ IDEA có thể commit (project-level config hữu ích cho team)
+# Bỏ comment các dòng dưới nếu muốn share config với team:
+# !.idea/
+# !.idea/codeStyles/
+# !.idea/inspectionProfiles/
+# !.idea/runConfigurations/
+
+
+# ----------------------------------------------------------------
+#  IDE – VS Code
+# ----------------------------------------------------------------
+.vscode/
+*.code-workspace
+.history/
+
+
+# ----------------------------------------------------------------
+#  IDE – Eclipse / STS (Spring Tool Suite)
+# ----------------------------------------------------------------
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+
+# ----------------------------------------------------------------
+#  IDE – NetBeans
+# ----------------------------------------------------------------
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+
+# ----------------------------------------------------------------
+#  OS – macOS
+# ----------------------------------------------------------------
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+
+# ----------------------------------------------------------------
+#  OS – Windows
+# ----------------------------------------------------------------
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+
+# ----------------------------------------------------------------
+#  OS – Linux
+# ----------------------------------------------------------------
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+
+# ----------------------------------------------------------------
+#  LIQUIBASE
+# ----------------------------------------------------------------
+# Lock file Liquibase tạo khi chạy migration
+liquibase.lock
+*.liquibase.lock
+
+
+# ----------------------------------------------------------------
+#  MONITORING & TELEMETRY (Runtime data)
+# ----------------------------------------------------------------
+# Prometheus data
+prometheus-data/
+grafana-data/
+
+# Heap/thread dumps
+*.hprof
+*.dump
+*.jfr
+
+
+# ----------------------------------------------------------------
+#  TEST & COVERAGE
+# ----------------------------------------------------------------
+# JaCoCo coverage reports
+**/jacoco.exec
+**/jacoco/
+coverage/
+
+# Surefire test reports
+**/surefire-reports/
+**/failsafe-reports/
+
+# Mockito / Test artifacts
+mockito-extensions/
+
+
+# ----------------------------------------------------------------
+#  NODE / FRONTEND (nếu có admin UI)
+# ----------------------------------------------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+dist/
+build/
+.next/
+.nuxt/
+
+
+# ----------------------------------------------------------------
+#  MISC
+# ----------------------------------------------------------------
+# Patch files
+*.patch
+*.orig
+
+# Backup files
+*.bak
+*.swp
+*.swo
+*~
+
+# Temp files
+tmp/
+temp/
+.tmp/
+
+# Checkstyle cache
+.checkstyle
+
+# PMD
+.pmd
+
+# SonarQube
+.sonar/
+.scannerwork/
