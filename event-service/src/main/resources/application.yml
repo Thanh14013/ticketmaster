@@ -1,0 +1,97 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: event-service
+
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:event_db}
+    username: ${POSTGRES_USER:ticketmaster}
+    password: ${POSTGRES_PASSWORD:ticketmaster_secret}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      pool-name: EventServicePool
+      maximum-pool-size: 15
+      minimum-idle: 3
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+
+  # ── Redis (Event Seats Cache) ─────────────────────────────
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:redis_secret}
+      lettuce:
+        pool:
+          max-active: 16
+          max-idle: 8
+  cache:
+    type: redis
+    redis:
+      time-to-live: 300000    # 5 minutes for seat availability
+
+  # ── Kafka ─────────────────────────────────────────────────
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:29092}
+    consumer:
+      group-id: event-service-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.ticketmaster.common.event"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+# ── Eureka ───────────────────────────────────────────────────
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka:eureka_secret@localhost:8761/eureka/
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    prefer-ip-address: true
+
+# ── Actuator ──────────────────────────────────────────────────
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+logging:
+  level:
+    com.ticketmaster.event: DEBUG
+
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka:eureka_secret@service-registry:8761/eureka/
+logging:
+  level:
+    com.ticketmaster.event: INFO

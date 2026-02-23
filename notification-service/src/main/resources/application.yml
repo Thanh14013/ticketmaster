@@ -1,0 +1,109 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: notification-service
+
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:notification_db}
+    username: ${POSTGRES_USER:ticketmaster}
+    password: ${POSTGRES_PASSWORD:ticketmaster_secret}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      pool-name: NotificationServicePool
+      maximum-pool-size: 10
+      minimum-idle: 2
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:29092}
+    consumer:
+      group-id: notification-service-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.ticketmaster.common.event"
+        max.poll.records: 20
+
+  # ── Mail ──────────────────────────────────────────────────
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:your@gmail.com}
+    password: ${MAIL_PASSWORD:app_password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+        debug: false
+
+  # ── Thymeleaf (Email Templates) ───────────────────────────
+  thymeleaf:
+    check-template-location: true
+    prefix: classpath:/templates/email/
+    suffix: .html
+    encoding: UTF-8
+
+# ── SSE Config ────────────────────────────────────────────────
+notification:
+  sse:
+    timeout-ms: 300000      # 5 phút timeout SSE connection
+    heartbeat-ms: 15000     # Gửi heartbeat mỗi 15 giây
+
+# ── Eureka ───────────────────────────────────────────────────
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka:eureka_secret@localhost:8761/eureka/
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    prefer-ip-address: true
+
+# ── Actuator ──────────────────────────────────────────────────
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+logging:
+  level:
+    com.ticketmaster.notification: DEBUG
+    org.springframework.mail: DEBUG
+
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka:eureka_secret@service-registry:8761/eureka/
+logging:
+  level:
+    com.ticketmaster.notification: INFO
+    org.springframework.mail: WARN

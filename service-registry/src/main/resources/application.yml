@@ -1,0 +1,49 @@
+server:
+  port: 8761
+
+spring:
+  application:
+    name: service-registry
+  security:
+    user:
+      name: eureka
+      password: eureka_secret
+
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    register-with-eureka: false   # Eureka không tự đăng ký chính mình
+    fetch-registry: false
+    service-url:
+      defaultZone: http://${spring.security.user.name}:${spring.security.user.password}@${eureka.instance.hostname}:${server.port}/eureka/
+  server:
+    enable-self-preservation: false   # Tắt self-preservation cho dev
+    eviction-interval-timer-in-ms: 5000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.netflix.eureka: WARN
+    com.netflix.discovery: WARN
+
+---
+# ── Docker Profile ───────────────────────────────────────────
+spring:
+  config:
+    activate:
+      on-profile: docker
+eureka:
+  instance:
+    hostname: service-registry
+  client:
+    service-url:
+      defaultZone: http://${spring.security.user.name}:${spring.security.user.password}@${eureka.instance.hostname}:${server.port}/eureka/

@@ -1,0 +1,105 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: user-service
+
+  # ── Database ──────────────────────────────────────────────
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:user_db}
+    username: ${POSTGRES_USER:ticketmaster}
+    password: ${POSTGRES_PASSWORD:ticketmaster_secret}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      pool-name: UserServicePool
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate      # Liquibase quản lý schema, JPA chỉ validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        default_schema: public
+
+  # ── Liquibase ──────────────────────────────────────────────
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+    enabled: true
+
+  # ── Redis Cache ───────────────────────────────────────────
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:redis_secret}
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 4
+  cache:
+    type: redis
+    redis:
+      time-to-live: 3600000   # 1 hour
+
+# ── Eureka ───────────────────────────────────────────────────
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka:eureka_secret@localhost:8761/eureka/
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
+
+# ── JWT ──────────────────────────────────────────────────────
+jwt:
+  secret: ${JWT_SECRET:ThisIsAVeryLongSecretKeyForJWTGenerationThatShouldBeAtLeast256Bits}
+  expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+  refresh-expiration-ms: 604800000   # 7 days
+
+# ── Actuator ──────────────────────────────────────────────────
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+logging:
+  level:
+    com.ticketmaster.user: DEBUG
+    org.springframework.security: INFO
+    org.hibernate.SQL: DEBUG
+
+---
+# ── Docker Profile ───────────────────────────────────────────
+spring:
+  config:
+    activate:
+      on-profile: docker
+  jpa:
+    show-sql: false
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka:eureka_secret@service-registry:8761/eureka/
+logging:
+  level:
+    com.ticketmaster.user: INFO
+    org.hibernate.SQL: WARN
