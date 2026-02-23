@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="V001-create-venues-table" author="ticketmaster-dev">
+
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="venues"/></not>
+        </preConditions>
+
+        <comment>Create venues table – địa điểm tổ chức sự kiện</comment>
+
+        <createTable tableName="venues">
+            <column name="id"         type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false" primaryKeyName="pk_venues"/>
+            </column>
+            <column name="name"       type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="address"    type="VARCHAR(500)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="city"       type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="country"    type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="capacity"   type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMPTZ">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMPTZ">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="venues" indexName="idx_venues_city">
+            <column name="city"/>
+        </createIndex>
+
+    </changeSet>
+
+</databaseChangeLog>

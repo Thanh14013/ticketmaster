@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!--
+        Migration: V003 – Tạo bảng seat_sections
+        Author   : ticketmaster-dev
+
+        Design notes:
+          - Section thuộc về Venue (không phải Event)
+          - Mỗi Event dùng chung sections của Venue
+          - base_price là giá gốc của section trong venue;
+            giá thực tế cho từng Event được lưu trong bảng seats
+          - total_seats: đếm số ghế trong section (không phải DB constraint,
+            chỉ là thông tin display)
+    -->
+
+    <changeSet id="V003-create-seat-sections-table" author="ticketmaster-dev">
+
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="seat_sections"/></not>
+        </preConditions>
+
+        <comment>Create seat_sections table – khu vực ghế trong venue (VIP, Khu A, B...)</comment>
+
+        <createTable tableName="seat_sections">
+
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false" primaryKeyName="pk_seat_sections"/>
+            </column>
+
+            <column name="venue_id" type="VARCHAR(36)"
+                    remarks="FK → venues.id">
+                <constraints nullable="false"
+                             foreignKeyName="fk_sections_venue"
+                             references="venues(id)"/>
+            </column>
+
+            <column name="name" type="VARCHAR(100)"
+                    remarks="Tên khu vực: VIP, Khu A, Standing Zone...">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="description" type="VARCHAR(500)"
+                    remarks="Mô tả khu vực (vị trí, đặc điểm)">
+                <constraints nullable="true"/>
+            </column>
+
+            <column name="base_price" type="DECIMAL(10,2)"
+                    remarks="Giá vé cơ bản của khu vực này">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="total_seats" type="INT" defaultValueNumeric="0"
+                    remarks="Tổng số ghế trong section (informational)">
+                <constraints nullable="false"/>
+            </column>
+
+        </createTable>
+
+        <!-- Index: lấy tất cả sections của một venue -->
+        <createIndex tableName="seat_sections" indexName="idx_sections_venue_id">
+            <column name="venue_id"/>
+        </createIndex>
+
+        <!-- Unique constraint: tên section phải unique trong cùng venue -->
+        <addUniqueConstraint
+                tableName="seat_sections"
+                columnNames="venue_id, name"
+                constraintName="uq_sections_venue_name"/>
+
+        <!-- CHECK: giá không âm -->
+        <sql>
+            ALTER TABLE seat_sections
+                ADD CONSTRAINT chk_sections_price
+                    CHECK (base_price >= 0);
+        </sql>
+
+    </changeSet>
+
+</databaseChangeLog>
