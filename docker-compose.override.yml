@@ -1,0 +1,84 @@
+version: '3.9'
+
+# ================================================================
+#  TICKETMASTER – Docker Compose Override (LOCAL DEV)
+#
+#  File này tự động được Docker Compose merge vào docker-compose.yml
+#  khi chạy `docker compose up` mà KHÔNG cần chỉ định -f.
+#
+#  Mục đích:
+#    - Expose thêm ports để dev kết nối trực tiếp từ IDE/tools
+#    - Bật debug logging cho Spring Boot services
+#    - Không healthcheck cứng để khởi động nhanh hơn
+#    - Không rebuild image mỗi lần (dùng image cache)
+#
+#  QUAN TRỌNG: File này đã được thêm vào .gitignore.
+#  Mỗi developer tự chỉnh theo môi trường máy mình.
+#  Nếu muốn share config chung thì xóa khỏi .gitignore.
+# ================================================================
+
+services:
+
+  # ── Infrastructure: expose thêm port để dev dùng tool bên ngoài ──
+
+  postgres:
+    ports:
+      - "${POSTGRES_EXTERNAL_PORT:-5432}:5432"   # DBeaver, IntelliJ Database tool
+    environment:
+      POSTGRES_LOG_STATEMENT: all                 # Log tất cả SQL queries (chỉ dev)
+
+  redis:
+    ports:
+      - "${REDIS_EXTERNAL_PORT:-6379}:6379"       # Redis Insight, redis-cli từ host
+
+  kafka:
+    ports:
+      - "${KAFKA_EXTERNAL_PORT:-29092}:${KAFKA_EXTERNAL_PORT:-29092}"  # Kafka client từ host
+
+  # ── Spring Boot Services: bật DEBUG logging ──────────────────────
+  #
+  #  Khi dev local, có 2 lựa chọn:
+  #  Option A: Chạy service trong Docker (dùng config dưới đây)
+  #  Option B: Chạy service ngoài Docker bằng `mvn spring-boot:run`
+  #            → Chỉ cần giữ infra (postgres, redis, kafka) trong Docker
+  #            → Comment toàn bộ phần service bên dưới
+
+  service-registry:
+    environment:
+      LOGGING_LEVEL_COM_NETFLIX_EUREKA:    WARN
+      LOGGING_LEVEL_COM_NETFLIX_DISCOVERY: WARN
+
+  api-gateway:
+    environment:
+      LOGGING_LEVEL_COM_TICKETMASTER:          DEBUG
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_CLOUD: DEBUG
+      SPRING_DEVTOOLS_RESTART_ENABLED:         'false'
+
+  user-service:
+    environment:
+      LOGGING_LEVEL_COM_TICKETMASTER:   DEBUG
+      LOGGING_LEVEL_ORG_HIBERNATE_SQL:  DEBUG
+      SPRING_JPA_SHOW_SQL:              'true'
+
+  event-service:
+    environment:
+      LOGGING_LEVEL_COM_TICKETMASTER:  DEBUG
+      LOGGING_LEVEL_ORG_HIBERNATE_SQL: DEBUG
+      SPRING_JPA_SHOW_SQL:             'true'
+
+  booking-service:
+    environment:
+      LOGGING_LEVEL_COM_TICKETMASTER:  DEBUG
+      LOGGING_LEVEL_ORG_HIBERNATE_SQL: DEBUG
+      LOGGING_LEVEL_ORG_REDISSON:      INFO
+      SPRING_JPA_SHOW_SQL:             'true'
+
+  payment-service:
+    environment:
+      LOGGING_LEVEL_COM_TICKETMASTER: DEBUG
+      LOGGING_LEVEL_COM_STRIPE:       INFO
+
+  notification-service:
+    environment:
+      LOGGING_LEVEL_COM_TICKETMASTER:          DEBUG
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_MAIL:  DEBUG
