@@ -1,0 +1,136 @@
+# ================================================================
+#  TICKETMASTER – Prometheus Configuration
+#  Scrape metrics từ tất cả Spring Boot services qua Actuator.
+#
+#  Endpoint của mỗi service: GET /actuator/prometheus
+#  Enabled bởi: micrometer-registry-prometheus dependency
+#               + management.endpoints.web.exposure.include=prometheus
+# ================================================================
+
+global:
+  scrape_interval:     15s   # Tần suất pull metrics
+  evaluation_interval: 15s   # Tần suất evaluate alert rules
+  scrape_timeout:      10s
+
+  external_labels:
+    project:     'ticketmaster'
+    environment: 'local'
+
+# ── Alert Rules (file riêng, thêm sau nếu cần) ───────────────
+alerting:
+  alertmanagers: []
+
+rule_files: []
+  # - "rules/jvm-alerts.yml"
+  # - "rules/business-alerts.yml"
+
+# ================================================================
+#  Scrape Configs
+# ================================================================
+scrape_configs:
+
+  # ── Prometheus tự monitor chính mình ─────────────────────────
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: 'prometheus'
+
+  # ──────────────────────────────────────────────────────────────
+  #  SPRING CLOUD INFRASTRUCTURE
+  # ──────────────────────────────────────────────────────────────
+
+  - job_name: 'service-registry'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 30s   # Eureka không thay đổi nhanh
+    static_configs:
+      - targets: ['service-registry:8761']
+        labels:
+          service: 'service-registry'
+          layer:   'infrastructure'
+
+  - job_name: 'api-gateway'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 10s   # Gateway là entry point → monitor chặt hơn
+    static_configs:
+      - targets: ['api-gateway:8080']
+        labels:
+          service: 'api-gateway'
+          layer:   'infrastructure'
+
+  # ──────────────────────────────────────────────────────────────
+  #  BUSINESS MICROSERVICES
+  # ──────────────────────────────────────────────────────────────
+
+  - job_name: 'user-service'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['user-service:8081']
+        labels:
+          service: 'user-service'
+          layer:   'business'
+
+  - job_name: 'event-service'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['event-service:8082']
+        labels:
+          service: 'event-service'
+          layer:   'business'
+
+  - job_name: 'booking-service'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 10s   # Core service → monitor chặt
+    static_configs:
+      - targets: ['booking-service:8083']
+        labels:
+          service: 'booking-service'
+          layer:   'business'
+
+  - job_name: 'payment-service'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 10s   # Payment → monitor chặt
+    static_configs:
+      - targets: ['payment-service:8084']
+        labels:
+          service: 'payment-service'
+          layer:   'business'
+
+  - job_name: 'notification-service'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['notification-service:8085']
+        labels:
+          service: 'notification-service'
+          layer:   'business'
+
+  # ──────────────────────────────────────────────────────────────
+  #  INFRASTRUCTURE EXPORTERS (uncomment khi thêm exporter)
+  # ──────────────────────────────────────────────────────────────
+
+  # PostgreSQL Exporter
+  # - job_name: 'postgres'
+  #   static_configs:
+  #     - targets: ['postgres-exporter:9187']
+  #       labels:
+  #         service: 'postgres'
+  #         layer:   'database'
+
+  # Redis Exporter
+  # - job_name: 'redis'
+  #   static_configs:
+  #     - targets: ['redis-exporter:9121']
+  #       labels:
+  #         service: 'redis'
+  #         layer:   'cache'
+
+  # Kafka Exporter (JMX)
+  # - job_name: 'kafka'
+  #   static_configs:
+  #     - targets: ['kafka-exporter:9308']
+  #       labels:
+  #         service: 'kafka'
+  #         layer:   'messaging'

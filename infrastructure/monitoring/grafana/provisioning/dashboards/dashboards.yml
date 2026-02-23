@@ -1,0 +1,34 @@
+# ================================================================
+#  TICKETMASTER – Grafana Dashboard Provisioning
+#
+#  Grafana tự động load tất cả file *.json trong thư mục
+#  /etc/grafana/provisioning/dashboards (mount từ host).
+#
+#  Cách thêm dashboard mới:
+#    1. Tạo/export dashboard từ Grafana UI (JSON)
+#    2. Lưu file .json vào thư mục này
+#    3. Grafana sẽ tự load (updateIntervalSeconds=30)
+#
+#  Gợi ý dashboard nên có:
+#    - JVM metrics (Spring Boot – dashboard ID: 4701 trên grafana.com)
+#    - Spring Boot 3.x (dashboard ID: 19004)
+#    - Kafka overview
+#    - PostgreSQL overview
+#    - Business metrics (booking rate, payment success rate)
+# ================================================================
+
+apiVersion: 1
+
+providers:
+  - name:            'Ticketmaster Dashboards'
+    orgId:           1
+    folder:          'Ticketmaster'
+    folderUid:       'ticketmaster-dashboards'
+    type:            file
+    disableDeletion: false
+    editable:        true
+    updateIntervalSeconds: 30
+    allowUiUpdates:  true
+    options:
+      path:          /etc/grafana/provisioning/dashboards
+      foldersFromFilesStructure: true
