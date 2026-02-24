@@ -54,6 +54,20 @@ public class BookingCreatedEvent {
     @Builder.Default
     private String currency = "USD";
 
+    /**
+     * Stripe Payment Method ID do client cung cấp khi booking.
+     * Frontend gọi Stripe.js → nhận PM ID → gửi kèm khi POST /bookings.
+     * Null trong trường hợp booking không qua frontend (admin booking).
+     */
+    private String paymentMethodId;
+
+    /**
+     * Thời điểm booking hết hạn (UTC).
+     * Booking-service set = created_at + lock_ttl (thường 2 phút).
+     * Payment-service dùng để skip nếu đã hết hạn khi nhận event.
+     */
+    private Instant expiresAt;
+
     /** Thời điểm event xảy ra. */
     @Builder.Default
     private Instant occurredAt = Instant.now();
