@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!--
+        Migration: V002 – Tạo bảng booking_items
+        Author   : ticketmaster-dev
+
+        Design notes:
+          - Mỗi row = 1 ghế trong 1 booking (1 booking có 1-8 items)
+          - seat_id là logical FK → event-service seats.id (không có physical FK vì cross-service)
+          - seat_row, seat_number, section_name: snapshot tại thời điểm booking
+            (để hiển thị ticket kể cả khi event-service thay đổi data)
+          - price: snapshot tại thời điểm booking – immutable sau khi lưu
+          - UNIQUE (booking_id, seat_id): một ghế không thể xuất hiện 2 lần trong 1 booking
+    -->
+
+    <changeSet id="V002-create-booking-items-table" author="ticketmaster-dev">
+
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="booking_items"/></not>
+        </preConditions>
+
+        <comment>Create booking_items table – individual seats within a booking</comment>
+
+        <createTable tableName="booking_items">
+
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false" primaryKeyName="pk_booking_items"/>
+            </column>
+
+            <column name="booking_id" type="VARCHAR(36)"
+                    remarks="Physical FK → bookings.id">
+                <constraints nullable="false"
+                             foreignKeyName="fk_booking_items_booking"
+                             references="bookings(id)"/>
+            </column>
+
+            <column name="seat_id" type="VARCHAR(36)"
+                    remarks="Logical FK → event-service seats.id (cross-service)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="section_id" type="VARCHAR(36)"
+                    remarks="Logical FK → event-service seat_sections.id">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="seat_row" type="VARCHAR(5)"
+                    remarks="Snapshot: hàng ghế (vd: A, B, C)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="seat_number" type="VARCHAR(5)"
+                    remarks="Snapshot: số ghế trong hàng">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="section_name" type="VARCHAR(100)"
+                    remarks="Snapshot: tên khu vực (vd: VIP, Khu A)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="price" type="DECIMAL(10,2)"
+                    remarks="Giá tại thời điểm booking – immutable">
+                <constraints nullable="false"/>
+            </column>
+
+        </createTable>
+
+        <!-- Index: lấy tất cả items của 1 booking (cascade load) -->
+        <createIndex tableName="booking_items" indexName="idx_booking_items_booking_id">
+            <column name="booking_id"/>
+        </createIndex>
+
+        <!-- Index: kiểm tra seat đã được book chưa (cross-service query) -->
+        <createIndex tableName="booking_items" indexName="idx_booking_items_seat_id">
+            <column name="seat_id"/>
+        </createIndex>
+
+        <!-- UNIQUE: 1 ghế không thể xuất hiện 2 lần trong 1 booking -->
+        <addUniqueConstraint
+            tableName="booking_items"
+            columnNames="booking_id, seat_id"
+            constraintName="uq_booking_items_booking_seat"/>
+
+        <!-- CHECK: giá không âm -->
+        <sql>
+            ALTER TABLE booking_items
+            ADD CONSTRAINT chk_booking_items_price
+            CHECK (price >= 0);
+        </sql>
+
+    </changeSet>
+
+</databaseChangeLog>
