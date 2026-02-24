@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Booking Confirmed – Ticketmaster</title>
+    <style>
+      /* Reset */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        background-color: #f5f5f5;
+        color: #333;
+        line-height: 1.6;
+      }
+
+      /* Wrapper */
+      .email-wrapper {
+        max-width: 600px;
+        margin: 40px auto;
+        background-color: #ffffff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      }
+
+      /* Header */
+      .email-header {
+        background: linear-gradient(
+          135deg,
+          #1a1a2e 0%,
+          #16213e 50%,
+          #0f3460 100%
+        );
+        padding: 40px 40px 32px;
+        text-align: center;
+      }
+      .email-header .logo {
+        font-size: 26px;
+        font-weight: 800;
+        color: #e94560;
+        letter-spacing: -0.5px;
+      }
+      .email-header .logo span {
+        color: #ffffff;
+      }
+      .email-header .tagline {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 13px;
+        margin-top: 4px;
+      }
+
+      /* Success Banner */
+      .success-banner {
+        background: linear-gradient(135deg, #00b09b, #96c93d);
+        padding: 28px 40px;
+        text-align: center;
+      }
+      .success-banner .icon {
+        font-size: 48px;
+        display: block;
+        margin-bottom: 8px;
+      }
+      .success-banner h1 {
+        color: #ffffff;
+        font-size: 28px;
+        font-weight: 700;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      }
+      .success-banner p {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 15px;
+        margin-top: 6px;
+      }
+
+      /* Body */
+      .email-body {
+        padding: 40px;
+      }
+
+      .greeting {
+        font-size: 18px;
+        color: #1a1a2e;
+        margin-bottom: 8px;
+      }
+      .greeting strong {
+        color: #0f3460;
+      }
+
+      .intro-text {
+        color: #666;
+        font-size: 15px;
+        margin-bottom: 32px;
+      }
+
+      /* Booking Details Card */
+      .booking-card {
+        background: #f8f9ff;
+        border: 1px solid #e0e4f0;
+        border-radius: 10px;
+        padding: 24px;
+        margin-bottom: 28px;
+      }
+      .booking-card h2 {
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #888;
+        margin-bottom: 16px;
+        border-bottom: 1px solid #e0e4f0;
+        padding-bottom: 10px;
+      }
+
+      .detail-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 8px 0;
+        border-bottom: 1px dashed #eee;
+      }
+      .detail-row:last-child {
+        border-bottom: none;
+      }
+      .detail-label {
+        font-size: 14px;
+        color: #888;
+        flex: 0 0 40%;
+      }
+      .detail-value {
+        font-size: 14px;
+        color: #1a1a2e;
+        font-weight: 600;
+        text-align: right;
+        flex: 0 0 58%;
+      }
+
+      /* Total Amount Highlight */
+      .total-row .detail-label {
+        font-weight: 700;
+        color: #333;
+        font-size: 15px;
+      }
+      .total-row .detail-value {
+        font-size: 22px;
+        color: #00b09b;
+        font-weight: 800;
+      }
+
+      /* CTA Button */
+      .cta-section {
+        text-align: center;
+        margin: 32px 0;
+      }
+      .cta-button {
+        display: inline-block;
+        background: linear-gradient(135deg, #e94560, #c0392b);
+        color: #ffffff !important;
+        text-decoration: none;
+        padding: 14px 36px;
+        border-radius: 50px;
+        font-size: 16px;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+        box-shadow: 0 4px 15px rgba(233, 69, 96, 0.4);
+      }
+
+      /* Info Box */
+      .info-box {
+        background: #fff8e1;
+        border-left: 4px solid #ffc107;
+        border-radius: 0 8px 8px 0;
+        padding: 16px 20px;
+        margin: 24px 0;
+      }
+      .info-box p {
+        font-size: 14px;
+        color: #664d03;
+        margin: 0;
+      }
+      .info-box strong {
+        color: #533f03;
+      }
+
+      /* Footer */
+      .email-footer {
+        background: #f8f9fa;
+        border-top: 1px solid #e9ecef;
+        padding: 28px 40px;
+        text-align: center;
+      }
+      .email-footer p {
+        font-size: 13px;
+        color: #999;
+        margin: 4px 0;
+      }
+      .email-footer a {
+        color: #e94560;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-wrapper">
+      <!-- Header -->
+      <div class="email-header">
+        <div class="logo">ticket<span>master</span></div>
+        <div class="tagline">Your gateway to amazing experiences</div>
+      </div>
+
+      <!-- Success Banner -->
+      <div class="success-banner">
+        <span class="icon">🎟</span>
+        <h1>Booking Confirmed!</h1>
+        <p>Your tickets are ready</p>
+      </div>
+
+      <!-- Body -->
+      <div class="email-body">
+        <p class="greeting">
+          Hi
+          <strong th:text="${recipientName ?: 'Valued Customer'}">John</strong>,
+        </p>
+        <p class="intro-text">
+          Great news! Your booking has been confirmed and payment was processed
+          successfully. Get ready for an amazing experience!
+        </p>
+
+        <!-- Booking Details -->
+        <div class="booking-card">
+          <h2>📋 Booking Details</h2>
+
+          <div class="detail-row">
+            <span class="detail-label">Event</span>
+            <span class="detail-value" th:text="${eventName ?: 'Your Event'}"
+              >Concert Night 2024</span
+            >
+          </div>
+
+          <div class="detail-row">
+            <span class="detail-label">Booking ID</span>
+            <span
+              class="detail-value"
+              style="font-family: monospace; font-size: 13px"
+              th:text="${bookingId}"
+              >BK-123456</span
+            >
+          </div>
+
+          <div class="detail-row">
+            <span class="detail-label">Number of Seats</span>
+            <span class="detail-value" th:text="${seatCount + ' seat(s)'}"
+              >2 seat(s)</span
+            >
+          </div>
+
+          <div class="detail-row">
+            <span class="detail-label">Transaction ID</span>
+            <span
+              class="detail-value"
+              style="font-family: monospace; font-size: 12px; color: #888"
+              th:text="${transactionId}"
+              >pi_3Oxxx</span
+            >
+          </div>
+
+          <div
+            class="detail-row total-row"
+            style="margin-top: 8px; padding-top: 16px"
+          >
+            <span class="detail-label">Total Paid</span>
+            <span
+              class="detail-value"
+              th:text="'$' + ${#numbers.formatDecimal(totalAmount, 1, 2)}"
+              >$250.00</span
+            >
+          </div>
+        </div>
+
+        <!-- Info Box -->
+        <div class="info-box">
+          <p>
+            <strong>📱 Show your ticket:</strong>
+            Present this email or your Booking ID at the venue entrance. Please
+            arrive 30 minutes before the event starts.
+          </p>
+        </div>
+
+        <!-- CTA -->
+        <div class="cta-section">
+          <a href="#" class="cta-button">View My Booking</a>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="email-footer">
+        <p>
+          Need help? Contact us at
+          <a th:href="'mailto:' + ${supportEmail}" th:text="${supportEmail}"
+            >support@ticketmaster.com</a
+          >
+        </p>
+        <p style="margin-top: 12px">
+          © <span th:text="${year}">2024</span> Ticketmaster. All rights
+          reserved.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

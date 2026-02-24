@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Payment Failed – Ticketmaster</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        background-color: #f5f5f5;
+        color: #333;
+        line-height: 1.6;
+      }
+
+      .email-wrapper {
+        max-width: 600px;
+        margin: 40px auto;
+        background-color: #ffffff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      }
+
+      /* Header */
+      .email-header {
+        background: linear-gradient(
+          135deg,
+          #1a1a2e 0%,
+          #16213e 50%,
+          #0f3460 100%
+        );
+        padding: 40px 40px 32px;
+        text-align: center;
+      }
+      .email-header .logo {
+        font-size: 26px;
+        font-weight: 800;
+        color: #e94560;
+        letter-spacing: -0.5px;
+      }
+      .email-header .logo span {
+        color: #ffffff;
+      }
+      .email-header .tagline {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 13px;
+        margin-top: 4px;
+      }
+
+      /* Alert Banner */
+      .alert-banner {
+        background: linear-gradient(135deg, #ff416c, #ff4b2b);
+        padding: 28px 40px;
+        text-align: center;
+      }
+      .alert-banner .icon {
+        font-size: 48px;
+        display: block;
+        margin-bottom: 8px;
+      }
+      .alert-banner h1 {
+        color: #ffffff;
+        font-size: 26px;
+        font-weight: 700;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      }
+      .alert-banner p {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 15px;
+        margin-top: 6px;
+      }
+
+      /* Body */
+      .email-body {
+        padding: 40px;
+      }
+
+      .greeting {
+        font-size: 18px;
+        color: #1a1a2e;
+        margin-bottom: 8px;
+      }
+      .greeting strong {
+        color: #0f3460;
+      }
+
+      .intro-text {
+        color: #666;
+        font-size: 15px;
+        margin-bottom: 28px;
+      }
+
+      /* Error Details Card */
+      .error-card {
+        background: #fff5f5;
+        border: 1px solid #ffd7d7;
+        border-radius: 10px;
+        padding: 24px;
+        margin-bottom: 28px;
+      }
+      .error-card h2 {
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #e74c3c;
+        margin-bottom: 16px;
+        border-bottom: 1px solid #ffd7d7;
+        padding-bottom: 10px;
+      }
+
+      .detail-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 8px 0;
+        border-bottom: 1px dashed #ffd7d7;
+      }
+      .detail-row:last-child {
+        border-bottom: none;
+      }
+      .detail-label {
+        font-size: 14px;
+        color: #888;
+        flex: 0 0 40%;
+      }
+      .detail-value {
+        font-size: 14px;
+        color: #1a1a2e;
+        font-weight: 600;
+        text-align: right;
+        flex: 0 0 58%;
+      }
+      .detail-value.error-text {
+        color: #e74c3c;
+      }
+
+      /* Steps to Fix */
+      .fix-section {
+        margin: 28px 0;
+      }
+      .fix-section h3 {
+        font-size: 16px;
+        color: #1a1a2e;
+        margin-bottom: 16px;
+        font-weight: 700;
+      }
+
+      .step-item {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 14px;
+        padding: 12px 16px;
+        background: #f8f9ff;
+        border-radius: 8px;
+        border: 1px solid #e8ecff;
+      }
+      .step-number {
+        background: #0f3460;
+        color: #ffffff;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 700;
+        flex-shrink: 0;
+        margin-right: 12px;
+        margin-top: 1px;
+      }
+      .step-text {
+        font-size: 14px;
+        color: #444;
+      }
+      .step-text strong {
+        color: #1a1a2e;
+      }
+
+      /* Info Box */
+      .info-box {
+        background: #e8f4fd;
+        border-left: 4px solid #3498db;
+        border-radius: 0 8px 8px 0;
+        padding: 16px 20px;
+        margin: 20px 0;
+      }
+      .info-box p {
+        font-size: 14px;
+        color: #1a5276;
+        margin: 0;
+      }
+
+      /* CTA Button */
+      .cta-section {
+        text-align: center;
+        margin: 32px 0;
+      }
+      .cta-button {
+        display: inline-block;
+        background: linear-gradient(135deg, #0f3460, #1a1a2e);
+        color: #ffffff !important;
+        text-decoration: none;
+        padding: 14px 36px;
+        border-radius: 50px;
+        font-size: 16px;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+        box-shadow: 0 4px 15px rgba(15, 52, 96, 0.3);
+      }
+
+      /* Footer */
+      .email-footer {
+        background: #f8f9fa;
+        border-top: 1px solid #e9ecef;
+        padding: 28px 40px;
+        text-align: center;
+      }
+      .email-footer p {
+        font-size: 13px;
+        color: #999;
+        margin: 4px 0;
+      }
+      .email-footer a {
+        color: #e94560;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-wrapper">
+      <!-- Header -->
+      <div class="email-header">
+        <div class="logo">ticket<span>master</span></div>
+        <div class="tagline">Your gateway to amazing experiences</div>
+      </div>
+
+      <!-- Alert Banner -->
+      <div class="alert-banner">
+        <span class="icon">⚠️</span>
+        <h1>Payment Failed</h1>
+        <p>Don't worry – your seats have been released and you can try again</p>
+      </div>
+
+      <!-- Body -->
+      <div class="email-body">
+        <p class="greeting">
+          Hi
+          <strong th:text="${recipientName ?: 'Valued Customer'}">John</strong>,
+        </p>
+        <p class="intro-text">
+          Unfortunately, we were unable to process your payment. No charges were
+          made to your account. Your seats have been released and are available
+          for rebooking.
+        </p>
+
+        <!-- Error Details -->
+        <div class="error-card">
+          <h2>❌ Payment Details</h2>
+
+          <div class="detail-row">
+            <span class="detail-label">Event</span>
+            <span class="detail-value" th:text="${eventName ?: 'Your Event'}"
+              >Concert Night 2024</span
+            >
+          </div>
+
+          <div class="detail-row">
+            <span class="detail-label">Booking ID</span>
+            <span
+              class="detail-value"
+              style="font-family: monospace; font-size: 13px"
+              th:text="${bookingId}"
+              >BK-123456</span
+            >
+          </div>
+
+          <div class="detail-row">
+            <span class="detail-label">Amount</span>
+            <span
+              class="detail-value"
+              th:text="'$' + ${#numbers.formatDecimal(amount, 1, 2)}"
+              >$250.00</span
+            >
+          </div>
+
+          <div class="detail-row">
+            <span class="detail-label">Failure Reason</span>
+            <span
+              class="detail-value error-text"
+              th:text="${failureReason ?: 'Payment declined'}"
+              >Card declined</span
+            >
+          </div>
+        </div>
+
+        <!-- Info Box -->
+        <div class="info-box">
+          <p>
+            💡 <strong>No charges were made.</strong>
+            Your original payment method has not been charged. You can safely
+            try again with the same or a different payment method.
+          </p>
+        </div>
+
+        <!-- Steps to Fix -->
+        <div class="fix-section">
+          <h3>What to do next:</h3>
+
+          <div class="step-item">
+            <div class="step-number">1</div>
+            <div class="step-text">
+              <strong>Check your card details</strong> – Make sure the card
+              number, expiry date, and CVV are correct.
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-number">2</div>
+            <div class="step-text">
+              <strong>Ensure sufficient funds</strong> – Check your account
+              balance or credit limit.
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-number">3</div>
+            <div class="step-text">
+              <strong>Try again</strong> – Return to the event page and rebook
+              your seats (subject to availability).
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-number">4</div>
+            <div class="step-text">
+              <strong>Contact support</strong> – If the issue persists, reach
+              out to us at
+              <a th:href="'mailto:' + ${supportEmail}" th:text="${supportEmail}"
+                >support@ticketmaster.com</a
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="cta-section">
+          <a href="#" class="cta-button">Try Booking Again</a>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="email-footer">
+        <p>
+          Need help? Contact us at
+          <a th:href="'mailto:' + ${supportEmail}" th:text="${supportEmail}"
+            >support@ticketmaster.com</a
+          >
+        </p>
+        <p style="margin-top: 12px">
+          © <span th:text="${year}">2024</span> Ticketmaster. All rights
+          reserved.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>
